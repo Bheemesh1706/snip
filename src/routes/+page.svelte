@@ -1,7 +1,6 @@
 <script lang="ts">
-
 	// Capture screenshot of a specific area
-	function captureScreenshot(x:number, y:number, width:number, height:number) {
+	function captureScreenshot(x: number, y: number, width: number, height: number) {
 		navigator.mediaDevices
 			.getDisplayMedia({ video: true })
 			.then((stream) => {
@@ -42,18 +41,39 @@
 			});
 	}
 
+	//Handle mouse event
+	const handleMouseDown = () =>{
+    let body = document.getElementsByTagName("body")
+  }
+
+  const handleMouse = (event:MouseEvent) =>{
+    // console.log(event)
+  }
+
 	function handleClick() {
-		// capture()
 		captureScreenshot(0, 0, 500, 500);
 	}
 </script>
 
-<h1>Snip Tool</h1>
-<button
-	on:click={() => {
-		console.log('Click');
-		handleClick();
-	}}
->
-	ScreenShot
-</button>
+<div id="main" style="height:100vh; width:100vw;" on:mousedown={handleMouseDown} on:mousemove={handleMouse}>
+	<canvas id="snip" class="snip" />
+	<h1>Snip Tool</h1>
+	<button
+		on:click={() => {
+			console.log('Click');
+			handleClick();
+		}}
+	>
+		ScreenShot
+	</button>
+</div>
+
+<style>
+	.snip {
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 10;
+		background-color: transparent;
+	}
+</style>
