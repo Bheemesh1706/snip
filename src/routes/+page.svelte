@@ -1,4 +1,7 @@
 <script lang="ts">
+	
+  let mouse= {};
+
 	// Capture screenshot of a specific area
 	function captureScreenshot(x: number, y: number, width: number, height: number) {
 		navigator.mediaDevices
@@ -43,7 +46,7 @@
 
 	//Handle mouse event
 	const handleMouseDown = () =>{
-    let body = document.getElementsByTagName("body")
+      
   }
 
   const handleMouse = (event:MouseEvent) =>{
@@ -55,8 +58,7 @@
 	}
 </script>
 
-<div id="main" style="height:100vh; width:100vw;" on:mousedown={handleMouseDown} on:mousemove={handleMouse}>
-	<canvas id="snip" class="snip" />
+<div id="main"  on:mousedown={handleMouseDown} on:mousemove={handleMouse}>
 	<h1>Snip Tool</h1>
 	<button
 		on:click={() => {
