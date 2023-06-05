@@ -1,6 +1,19 @@
 <script lang="ts">
-	
-  let mouse= {};
+	let mouse = {};
+	var canvasOffset = 0;
+	var canvasx = 0;
+	var canvasy = 0;
+	var last_mousex = 0;
+	var last_mousey = 0;
+	var mousex = 0;
+	var mousey = 0;
+	var mousedown = false;
+	var shapes: any[] = [];
+	var width: number;
+	var height: number;
+	// make var col a global variable
+	var col = 'black';
+	var ad = '';
 
 	// Capture screenshot of a specific area
 	function captureScreenshot(x: number, y: number, width: number, height: number) {
@@ -45,20 +58,88 @@
 	}
 
 	//Handle mouse event
-	const handleMouseDown = () =>{
-      
-  }
+	const handleMouseDown = (event: MouseEvent) => {
+		last_mousex = event.clientX - canvasx;
+		last_mousey = event.clientY - canvasy;
+		mousedown = true;
+	};
 
-  const handleMouse = (event:MouseEvent) =>{
-    // console.log(event)
-  }
+	const handleMouseUp = (event: MouseEvent) => {
+		const lastPos = {
+			lastMouseX: last_mousex,
+			lastMouseY: last_mousey,
+			rectWidth: width,
+			rectHeight: height,
+			color: col,
+			name: ad
+		};
+		shapes.push(lastPos);
+		mousedown = false;
+	};
+
+	const handleMouse = (event: MouseEvent) => {
+		mousex = event.clientX - canvasx;
+		mousey = event.clientY - canvasy;
+
+		if (mousedown) {
+			var canvas = document.getElementById('snip') as HTMLCanvasElement;
+			var ctx = canvas?.getContext('2d');
+			ctx?.clearRect(0, 0, canvas.width, canvas.height);
+			width = mousex - last_mousex;
+			height = mousey - last_mousey;
+			col = 'black';
+			if (shapes.length > 0 && ctx) {
+				for (var i in shapes) {
+					// for every shape in the shapes array beginPath
+					ctx.beginPath();
+					//set the color of the stroke
+					ctx.strokeStyle = shapes[i].color;
+					//draw the rect
+					ctx.rect(
+						shapes[i].lastMouseX,
+						shapes[i].lastMouseY,
+						shapes[i].rectWidth,
+						shapes[i].rectHeight
+					);
+					ctx.fillText(
+						shapes[i].name,
+						shapes[i].rectWidth - shapes[i].lastMouseX,
+						shapes[i].rectHeight - shapes[i].lastMouseY
+					);
+					ctx.stroke();
+				}
+			}
+			//for the new rect beginPath
+			if (ctx) {
+				ctx.beginPath();
+				ctx.rect(last_mousex, last_mousey, width, height);
+				ctx.strokeStyle = col;
+				ctx.lineWidth = 3;
+				ctx.fillText(ad, 100, 100);
+				ctx.stroke();
+			}
+		}
+	};
 
 	function handleClick() {
-		captureScreenshot(0, 0, 500, 500);
+		// captureScreenshot(0, 0, 500, 500);
+
+		const element = document.createElement('canvas');
+		element.style.position = 'absolute';
+		element.style.top = '0';
+		element.style.left = '0';
+		element.style.height = '100vh';
+		element.style.width = '100vw';
+		element.style.zIndex = '10';
+		element.id = 'snip';
+		element.addEventListener('mousedown', handleMouseDown);
+		element.addEventListener('mouseup',handleMouseUp);
+		element.addEventListener('mousemove',handleMouse);
+		document.body.appendChild(element);
 	}
 </script>
 
-<div id="main"  on:mousedown={handleMouseDown} on:mousemove={handleMouse}>
+<div id="main">
 	<h1>Snip Tool</h1>
 	<button
 		on:click={() => {
@@ -77,5 +158,7 @@
 		left: 0;
 		z-index: 10;
 		background-color: transparent;
+		width: 100vw;
+		height: 100vh;
 	}
 </style>
