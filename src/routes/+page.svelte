@@ -1,18 +1,20 @@
 <script lang="ts">
-	var startX=0;
-	var startY=0;
-	var mousex = 0;
-	var mousey = 0;
-	var mousedown = false;
-	var width: number;
-	var height: number;
-	var offsetX=0;
-	var offsetY=0;
-	var scrollX=0;
-	var scrollY=0;
-	// make var color a global variable
-	var color = 'black';
+	import { dimensions } from '../lib/dimention';
+	import { onMount, afterUpdate } from 'svelte';
+	import { get } from 'svelte/store';
 
+	var startX = 0;
+	var startY = 0;
+	var mouseX = 0;
+	var mouseY = 0;
+	var mousedown = false;
+	var offsetX = 0;
+	var offsetY = 0;
+	var scrollX = 0;
+	var scrollY = 0;
+	var screenRatio = 0;
+	var canvasW =0;
+	var canvasH=0;
 	// Capture screenshot of a specific area
 	function captureScreenshot(x: number, y: number, width: number, height: number) {
 		navigator.mediaDevices
@@ -55,65 +57,88 @@
 			});
 	}
 
+	// Calculate canvas dimensions based on window size
+	function calculateCanvasDimensions() {
+		const { innerWidth, innerHeight } = get(dimensions);
+		canvasW = innerWidth;
+		canvasH = innerHeight;
+	}
+	onMount(() => {
+		calculateCanvasDimensions();
+	});
+
+	// Update canvas dimensions on window resize
+	afterUpdate(() => {
+		calculateCanvasDimensions();
+	});
+
 	//Handle mouse event
 	const handleMouseDown = (event: MouseEvent) => {
-		event.preventDefault();
-    	event.stopPropagation();
+		calculateCanvasDimensions();
 		const canvas = document.getElementById('snip') as HTMLCanvasElement;
 		offsetX = canvas?.offsetLeft as number;
-		offsetY= canvas?.offsetTop as number;
-		startX =  event.clientX - offsetX;
+		offsetY = canvas?.offsetTop as number;
+		startX = event.clientX - offsetX;
 		startY = event.clientY - offsetY;
-		scrollX= canvas?.scrollLeft as number;
-		scrollY= canvas?.scrollTop as number;
-		console.log(offsetX,offsetY,scrollX,scrollY,startX,startY);
+		scrollX = canvas?.scrollLeft as number;
+		scrollY = canvas?.scrollTop as number;
+		screenRatio = canvas.width / canvas.height;
+		console.log(screenRatio);
 		mousedown = true;
+		console.log(event);
+	};
+
+	const handleTouchStart = (event: TouchEvent) => {
+		console.log(event);
+		console.log('touch  start');
 	};
 
 	const handleMouseUp = (event: MouseEvent) => {
-		event.preventDefault();
-    	event.stopPropagation();
+		// event.preventDefault();
+		// event.stopPropagation();
 		mousedown = false;
 	};
 
 	const handleMouse = (event: MouseEvent) => {
-		event.preventDefault();
-    	event.stopPropagation();
-		mousex = event.clientX - offsetX;
-		mousey = event.clientY - offsetY;
-		if (mousedown) {
-			var canvas = document.getElementById('snip') as HTMLCanvasElement;
-			var ctx = canvas?.getContext('2d');
-			ctx?.clearRect(0,0, canvas.width, canvas.height);
-			color = 'black';
-			width= mousex - startX;
-			height= mousey - startY;
+		// event.preventDefault();
+		// event.stopPropagation();
 
-			//for the new rect beginPath
-			if (ctx) {
-				ctx.beginPath();
-				ctx.strokeRect(startX,startY, width , height );;
-				ctx.strokeStyle = color;
-				ctx.lineWidth = .1;
-				ctx.stroke();
-			}
-		}
+		if (!mousedown) return;
+
+		mouseX = event.clientX - offsetX;
+		mouseY = event.clientY - offsetY;
+
+		var canvas = document.getElementById('snip') as HTMLCanvasElement;
+		var ctx = canvas?.getContext('2d') as CanvasRenderingContext2D;
+		ctx?.clearRect(0, 0, canvas.width, canvas.height);
+		var width = mouseX - startX;
+		var height = mouseY - startY;
+		ctx?.strokeRect(startX, startY, width, height);
+	};
+
+	const handleTouchMove = (event: TouchEvent) => {
+		console.log(event);
+		console.log('touch move');
 	};
 
 	function handleClick() {
 		// captureScreenshot(0, 0, 500, 500);
 
 		const element = document.createElement('canvas');
-		element.style.position = 'absolute';
+		element.style.position = 'fixed';
 		element.style.top = '0';
 		element.style.left = '0';
-		element.style.height = '100%';
-		element.style.width = '100%';
+		// element.style.height = String(canvasH)+'px';
+		// element.style.width = String(canvasW)+'px';
+		element.style.backgroundColor = 'red';
 		element.style.zIndex = '10';
 		element.id = 'snip';
 		element.addEventListener('mousedown', handleMouseDown);
-		element.addEventListener('mouseup',handleMouseUp);
-		element.addEventListener('mousemove',handleMouse);
+		element.addEventListener('mouseup', handleMouseUp);
+		element.addEventListener('mousemove', handleMouse);
+		element.addEventListener('touchstart', handleTouchStart);
+		element.addEventListener('touchmove', handleTouchMove);
+
 		document.body.appendChild(element);
 	}
 </script>
@@ -129,5 +154,4 @@
 		ScreenShot
 	</button>
 </div>
-
 
