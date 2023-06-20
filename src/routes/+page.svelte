@@ -1,8 +1,4 @@
 <script lang="ts">
-	import { dimensions } from '../lib/dimention';
-	import { onMount, afterUpdate } from 'svelte';
-	import { get } from 'svelte/store';
-
 	var startX = 0;
 	var startY = 0;
 	var mouseX = 0;
@@ -12,9 +8,9 @@
 	var offsetY = 0;
 	var scrollX = 0;
 	var scrollY = 0;
-	var screenRatio = 0;
-	var canvasW =0;
-	var canvasH=0;
+	var scaleX = 1;
+	var scaleY = 1;
+
 	// Capture screenshot of a specific area
 	function captureScreenshot(x: number, y: number, width: number, height: number) {
 		navigator.mediaDevices
@@ -57,35 +53,22 @@
 			});
 	}
 
-	// Calculate canvas dimensions based on window size
-	function calculateCanvasDimensions() {
-		const { innerWidth, innerHeight } = get(dimensions);
-		canvasW = innerWidth;
-		canvasH = innerHeight;
-	}
-	onMount(() => {
-		calculateCanvasDimensions();
-	});
-
-	// Update canvas dimensions on window resize
-	afterUpdate(() => {
-		calculateCanvasDimensions();
-	});
-
 	//Handle mouse event
 	const handleMouseDown = (event: MouseEvent) => {
-		calculateCanvasDimensions();
+		event.preventDefault();
+		event.stopPropagation();
+
 		const canvas = document.getElementById('snip') as HTMLCanvasElement;
+		var rect = canvas.getBoundingClientRect();
 		offsetX = canvas?.offsetLeft as number;
 		offsetY = canvas?.offsetTop as number;
-		startX = event.clientX - offsetX;
-		startY = event.clientY - offsetY;
+		scaleX = canvas.width / rect.width;
+		scaleY = canvas.height / rect.height;
+		startX = (event.clientX - offsetX) * scaleX;
+		startY = (event.clientY - offsetY) * scaleY;
 		scrollX = canvas?.scrollLeft as number;
 		scrollY = canvas?.scrollTop as number;
-		screenRatio = canvas.width / canvas.height;
-		console.log(screenRatio);
 		mousedown = true;
-		console.log(event);
 	};
 
 	const handleTouchStart = (event: TouchEvent) => {
@@ -94,19 +77,19 @@
 	};
 
 	const handleMouseUp = (event: MouseEvent) => {
-		// event.preventDefault();
-		// event.stopPropagation();
+		event.preventDefault();
+		event.stopPropagation();
 		mousedown = false;
 	};
 
 	const handleMouse = (event: MouseEvent) => {
-		// event.preventDefault();
-		// event.stopPropagation();
+		event.preventDefault();
+		event.stopPropagation();
 
 		if (!mousedown) return;
 
-		mouseX = event.clientX - offsetX;
-		mouseY = event.clientY - offsetY;
+		mouseX = (event.clientX - offsetX) * scaleX;
+		mouseY = (event.clientY - offsetY) * scaleY;
 
 		var canvas = document.getElementById('snip') as HTMLCanvasElement;
 		var ctx = canvas?.getContext('2d') as CanvasRenderingContext2D;
@@ -128,9 +111,8 @@
 		element.style.position = 'fixed';
 		element.style.top = '0';
 		element.style.left = '0';
-		// element.style.height = String(canvasH)+'px';
-		// element.style.width = String(canvasW)+'px';
-		element.style.backgroundColor = 'red';
+		element.style.height = '100%';
+		element.style.width = '100%';
 		element.style.zIndex = '10';
 		element.id = 'snip';
 		element.addEventListener('mousedown', handleMouseDown);
@@ -154,4 +136,3 @@
 		ScreenShot
 	</button>
 </div>
-
