@@ -10,6 +10,8 @@
 	var scrollY = 0;
 	var scaleX = 1;
 	var scaleY = 1;
+	var width = 0;
+	var height = 0;
 
 	// Capture screenshot of a specific area
 	function captureScreenshot(x: number, y: number, width: number, height: number) {
@@ -52,7 +54,20 @@
 				console.error('An error occurred while accessing the screen:', error);
 			});
 	}
+	function showPopUp() {
+		var result = window.confirm('Do you like to take a screenshot?');
 
+		if (result) {
+			console.log(startX,startY,width,height);
+			var canvas = document.getElementById('snip') as HTMLCanvasElement;
+			canvas.remove();
+			captureScreenshot(0, 0, 500, 500);
+		} else {
+			var canvas = document.getElementById('snip') as HTMLCanvasElement;
+			var ctx = canvas?.getContext('2d') as CanvasRenderingContext2D;
+			ctx?.clearRect(0, 0, canvas.width, canvas.height);
+		}
+	}
 	//Handle mouse event
 	const handleMouseDown = (event: MouseEvent) => {
 		event.preventDefault();
@@ -80,6 +95,8 @@
 		event.preventDefault();
 		event.stopPropagation();
 		mousedown = false;
+		console.log(startX,startY,width,height);
+		showPopUp();
 	};
 
 	const handleMouse = (event: MouseEvent) => {
@@ -94,9 +111,10 @@
 		var canvas = document.getElementById('snip') as HTMLCanvasElement;
 		var ctx = canvas?.getContext('2d') as CanvasRenderingContext2D;
 		ctx?.clearRect(0, 0, canvas.width, canvas.height);
-		var width = mouseX - startX;
-		var height = mouseY - startY;
+		width = mouseX - startX;
+		height = mouseY - startY;
 		ctx?.strokeRect(startX, startY, width, height);
+		console.log(startX,startY,width,height);
 	};
 
 	const handleTouchMove = (event: TouchEvent) => {
