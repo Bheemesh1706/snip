@@ -1,4 +1,9 @@
+<svelte:head>
+	<link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0-alpha.2/cropper.css" rel="stylesheet">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0-alpha.2/cropper.min.js"></script>
+</svelte:head>
 <script lang="ts">
+	import { onMount } from "svelte";
 	var startX = 0;
 	var startY = 0;
 	var mouseX = 0;
@@ -12,10 +17,48 @@
 	var scaleY = 1;
 	var width = 0;
 	var height = 0;
+	
+	
+
+	onMount(()=>{
+		let cropper:any;
+		var upload = document.querySelector("#file-input");
+		var save = document.querySelector("#save");
+		upload?.addEventListener('change',(event)=>{
+			 const target= event.target as HTMLInputElement;
+			 if (!target.files) return;
+			 const file = target?.files[0];
+			 const imgUrl = URL.createObjectURL(file);
+			 const img = document.createElement("img");
+			 img.src= imgUrl;
+			 img.style.height="500px";
+			 img.style.width="500px";
+			 document.body.appendChild(img);
+			 cropper = new Cropper(img);
+			
+		});
+		save?.addEventListener("click",(e)=>{
+			console.log("click")
+			 e.preventDefault();
+			 let imgSrc= cropper?.getCroppedCanvas().toDataURL();
+			 const img = document.createElement("img");
+			 img.src= imgSrc;
+			 img.style.height="500px";
+			 img.style.width="500px";
+			 document.body.appendChild(img);
+
+		})
+		
+	});
 
 	// Capture screenshot of a specific area
 	function captureScreenshot(x: number, y: number, width: number, height: number) {
-		navigator.mediaDevices
+		// const screenHeight = window.screen.height;
+		const screenHeight = window.screen.availHeight;
+		const webpageHeight = document.documentElement.clientHeight;
+		const yOffset = screenHeight-webpageHeight;
+		console.log(screenHeight,webpageHeight,yOffset)
+		 navigator.mediaDevices
 			.getDisplayMedia({ video: true })
 			.then((stream) => {
 				const videoTrack = stream.getVideoTracks()[0];
@@ -23,16 +66,12 @@
 				videoElement.srcObject = new MediaStream([videoTrack]);
 
 				videoElement.onloadedmetadata = () => {
-					const videoWidth = videoElement.videoWidth;
-					const videoHeight = videoElement.videoHeight;
-
 					const canvas = document.createElement('canvas');
 					canvas.width = width;
 					canvas.height = height;
 
 					const context = canvas.getContext('2d');
-
-					context?.drawImage(videoElement, x, y, width, height, 0, 0, width, height);
+					context?.drawImage(videoElement, x, y+yOffset, width, height,0,0,width,height);
 
 					canvas.toBlob((blob) => {
 						const screenshotUrl = URL.createObjectURL(blob as Blob);
@@ -145,12 +184,14 @@
 
 <div id="main">
 	<h1>Snip Tool</h1>
-	<button
+	<!-- <button
 		on:click={() => {
 			console.log('Click');
 			handleClick();
 		}}
 	>
 		ScreenShot
-	</button>
+	</button> -->
+	<input type="file" id="file-input" accept="image/jpeg, image/png, image/jpg">
+	<button id='save'>Save</button>
 </div>
