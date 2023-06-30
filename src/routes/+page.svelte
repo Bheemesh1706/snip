@@ -1,9 +1,5 @@
-<svelte:head>
-	<link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0-alpha.2/cropper.css" rel="stylesheet">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0-alpha.2/cropper.min.js"></script>
-</svelte:head>
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount } from 'svelte';
 	var startX = 0;
 	var startY = 0;
 	var mouseX = 0;
@@ -17,48 +13,38 @@
 	var scaleY = 1;
 	var width = 0;
 	var height = 0;
-	
-	
-
-	onMount(()=>{
-		let cropper:any;
-		var upload = document.querySelector("#file-input");
-		var save = document.querySelector("#save");
-		upload?.addEventListener('change',(event)=>{
-			 const target= event.target as HTMLInputElement;
-			 if (!target.files) return;
-			 const file = target?.files[0];
-			 const imgUrl = URL.createObjectURL(file);
-			 const img = document.createElement("img");
-			 img.src= imgUrl;
-			 img.style.height="500px";
-			 img.style.width="500px";
-			 document.body.appendChild(img);
-			 cropper = new Cropper(img);
-			
-		});
-		save?.addEventListener("click",(e)=>{
-			console.log("click")
-			 e.preventDefault();
-			 let imgSrc= cropper?.getCroppedCanvas().toDataURL();
-			 const img = document.createElement("img");
-			 img.src= imgSrc;
-			 img.style.height="500px";
-			 img.style.width="500px";
-			 document.body.appendChild(img);
-
-		})
+	let cropper: any;
+	onMount(() => {
 		
+		var upload = document.querySelector('#file-input');
+		var save = document.querySelector('#save');
+		upload?.addEventListener('change', (event) => {
+			const target = event.target as HTMLInputElement;
+			if (!target.files) return;
+			const file = target?.files[0];
+			const imgUrl = URL.createObjectURL(file);
+			const img = document.createElement('img');
+			img.src = imgUrl;
+			document.body.appendChild(img);
+			cropper = new Cropper(img);
+		});
+		save?.addEventListener('click', (e) => {
+			console.log('click');
+			e.preventDefault();
+			let imgSrc = cropper?.getCroppedCanvas().toDataURL();
+			const img = document.createElement('img');
+			img.src = imgSrc;
+			img.style.height = '500px';
+			img.style.width = '500px';
+			document.body.appendChild(img);
+		});
 	});
 
 	// Capture screenshot of a specific area
-	function captureScreenshot(x: number, y: number, width: number, height: number) {
-		// const screenHeight = window.screen.height;
-		const screenHeight = window.screen.availHeight;
+	function captureScreenshot() {
 		const webpageHeight = document.documentElement.clientHeight;
-		const yOffset = screenHeight-webpageHeight;
-		console.log(screenHeight,webpageHeight,yOffset)
-		 navigator.mediaDevices
+		const webpageWidth = document.documentElement.clientWidth;
+		navigator.mediaDevices
 			.getDisplayMedia({ video: true })
 			.then((stream) => {
 				const videoTrack = stream.getVideoTracks()[0];
@@ -67,17 +53,21 @@
 
 				videoElement.onloadedmetadata = () => {
 					const canvas = document.createElement('canvas');
-					canvas.width = width;
-					canvas.height = height;
+					canvas.width = webpageWidth;
+					canvas.height = webpageHeight;
 
 					const context = canvas.getContext('2d');
-					context?.drawImage(videoElement, x, y+yOffset, width, height,0,0,width,height);
+					context?.drawImage(videoElement, 0, 0, webpageWidth, webpageHeight);
 
 					canvas.toBlob((blob) => {
 						const screenshotUrl = URL.createObjectURL(blob as Blob);
 
 						// Open the screenshot in a new window/tab
-						window.open(screenshotUrl);
+
+						const img = document.createElement('img');
+						img.src = screenshotUrl;
+						document.body.appendChild(img);
+						cropper = new Cropper(img);
 
 						// Clean up the resources
 						URL.revokeObjectURL(screenshotUrl);
@@ -97,10 +87,9 @@
 		var result = window.confirm('Do you like to take a screenshot?');
 
 		if (result) {
-			console.log(startX,startY,width,height);
+			console.log(startX, startY, width, height);
 			var canvas = document.getElementById('snip') as HTMLCanvasElement;
 			canvas.remove();
-			captureScreenshot(0, 0, 500, 500);
 		} else {
 			var canvas = document.getElementById('snip') as HTMLCanvasElement;
 			var ctx = canvas?.getContext('2d') as CanvasRenderingContext2D;
@@ -134,7 +123,7 @@
 		event.preventDefault();
 		event.stopPropagation();
 		mousedown = false;
-		console.log(startX,startY,width,height);
+		console.log(startX, startY, width, height);
 		showPopUp();
 	};
 
@@ -153,7 +142,7 @@
 		width = mouseX - startX;
 		height = mouseY - startY;
 		ctx?.strokeRect(startX, startY, width, height);
-		console.log(startX,startY,width,height);
+		console.log(startX, startY, width, height);
 	};
 
 	const handleTouchMove = (event: TouchEvent) => {
@@ -162,8 +151,6 @@
 	};
 
 	function handleClick() {
-		// captureScreenshot(0, 0, 500, 500);
-
 		const element = document.createElement('canvas');
 		element.style.position = 'fixed';
 		element.style.top = '0';
@@ -182,16 +169,26 @@
 	}
 </script>
 
+<svelte:head>
+	<link
+		href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0-alpha.2/cropper.css"
+		rel="stylesheet"
+	/>
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0-alpha.2/cropper.min.js"
+	></script>
+</svelte:head>
+
 <div id="main">
 	<h1>Snip Tool</h1>
-	<!-- <button
+	<button
 		on:click={() => {
 			console.log('Click');
-			handleClick();
+			captureScreenshot();
 		}}
 	>
 		ScreenShot
-	</button> -->
-	<input type="file" id="file-input" accept="image/jpeg, image/png, image/jpg">
+	</button>
+	<!-- <input type="file" id="file-input" accept="image/jpeg, image/png, image/jpg"> -->
 	<button id='save'>Save</button>
 </div>
