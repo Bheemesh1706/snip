@@ -15,18 +15,52 @@
 	var height = 0;
 	let cropper: any;
 	onMount(() => {
-		
 		var upload = document.querySelector('#file-input');
 		var save = document.querySelector('#save');
-		upload?.addEventListener('change', (event) => {
-			const target = event.target as HTMLInputElement;
-			if (!target.files) return;
-			const file = target?.files[0];
-			const imgUrl = URL.createObjectURL(file);
-			const img = document.createElement('img');
-			img.src = imgUrl;
-			document.body.appendChild(img);
-			cropper = new Cropper(img);
+		let mediaRecorder: MediaRecorder | undefined;
+		let recordedChunks: Blob[] = [];
+		// upload?.addEventListener('change', (event) => {
+		// 	const target = event.target as HTMLInputElement;
+		// 	if (!target.files) return;
+		// 	const file = target?.files[0];
+		// 	const imgUrl = URL.createObjectURL(file);
+		// 	const img = document.createElement('img');
+		// 	img.src = imgUrl;
+		// 	document.body.appendChild(img);
+		// 	cropper = new Cropper(img);
+		// });
+		var videoButton = document.querySelector('#videoButton');
+		var videoElement = document.querySelector('#videoElement') as HTMLVideoElement;
+
+		videoButton?.addEventListener('click', (e) => {
+			navigator.mediaDevices
+				.getDisplayMedia({ video: true })
+				.then(function (stream) {
+					videoElement.srcObject = stream;
+					document.body.appendChild(videoElement);
+
+					mediaRecorder = new MediaRecorder(stream);
+
+					mediaRecorder.ondataavailable = function (event: BlobEvent) {
+						recordedChunks.push(event.data);
+					};
+
+					mediaRecorder.onstop = function () {
+						const recordedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+
+						const downloadLink = document.createElement('a');
+						downloadLink.href = URL.createObjectURL(recordedBlob);
+						downloadLink.download = 'screen-recording.webm';
+						downloadLink.click();
+
+						recordedChunks = [];
+					};
+
+					mediaRecorder.start();
+				})
+				.catch(function (error) {
+					console.error('Error capturing screen:', error);
+				});
 		});
 		save?.addEventListener('click', (e) => {
 			console.log('click');
@@ -190,5 +224,7 @@
 		ScreenShot
 	</button>
 	<!-- <input type="file" id="file-input" accept="image/jpeg, image/png, image/jpg"> -->
-	<button id='save'>Save</button>
+	<button id="save">Save</button>
+	<button id="videoButton">Capture Video</button>
+	<video id="videoElement" autoplay height="500px" width="500px" />
 </div>
