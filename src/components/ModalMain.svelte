@@ -106,9 +106,9 @@
 						img.src = screenshotUrl;
 
 						screenShotModal?.appendChild(img);
-						cropper = new Cropper(img,{
-							zoomable:false
-						});
+						// cropper = new Cropper(img,{
+						// 	zoomable:false
+						// });
 						
 						// Clean up the resources
 						URL.revokeObjectURL(screenshotUrl);
