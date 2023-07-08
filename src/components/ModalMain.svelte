@@ -2,7 +2,15 @@
 	import camera from '../assests/camera.png';
 	import videoCamera from '../assests/videoCamera.png';
 	import ScreenShot from './ScreenShot.svelte';
+
 	import { onMount } from 'svelte';
+
+	export let opened:boolean = false;
+
+	export const closeModal =()=>{
+		opened=false;
+	}
+
 	var startX = 0;
 	var startY = 0;
 	var mouseX = 0;
@@ -81,14 +89,15 @@
 	function captureScreenshot() {
 		const webpageHeight = document.documentElement.clientHeight;
 		const webpageWidth = document.documentElement.clientWidth;
+
 		navigator.mediaDevices
 			.getDisplayMedia({ video: true })
 			.then((stream) => {
 				const videoTrack = stream.getVideoTracks()[0];
 				const videoElement = document.createElement('video');
 				videoElement.srcObject = new MediaStream([videoTrack]);
-				const screenShotModal = document.getElementById("screenShotModal");
-				console.log(screenShotModal);
+				
+				
 				videoElement.onloadedmetadata = () => {
 					const canvas = document.createElement('canvas');
 					canvas.width = webpageWidth;
@@ -96,16 +105,20 @@
 
 					const context = canvas.getContext('2d');
 					context?.drawImage(videoElement, 0, 0, webpageWidth, webpageHeight);
-
+					opened=true;
 					canvas.toBlob((blob) => {
 						const screenshotUrl = URL.createObjectURL(blob as Blob);
 
 						// Open the screenshot in a new window/tab
-
+						
+						const screenShotModal = document.getElementById("screenShotModal");
 						const img = document.createElement('img');
 						img.src = screenshotUrl;
-
+						console.log(screenShotModal,screenshotUrl);
 						screenShotModal?.appendChild(img);
+
+						
+						
 						// cropper = new Cropper(img,{
 						// 	zoomable:false
 						// });

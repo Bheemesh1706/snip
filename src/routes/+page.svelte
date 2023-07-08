@@ -3,12 +3,14 @@
 	import ScreenShot from '../components/ScreenShot.svelte';
 	import { SvelteUIProvider } from '@svelteuidev/core';
 	import { Modal, Group, Button } from '@svelteuidev/core';
+	
 
-	let opened = false;
+	let mainModalComponent:any;
+	let opened:boolean;
 
-	const closeModal =()=>{
-		opened=false;
-	}
+	
+
+
 </script>
 
 <svelte:head>
@@ -24,13 +26,13 @@
 <SvelteUIProvider>
 	<div id="main" class="mainContainer">
 		
-		<ModalMain />
-		<Modal {opened} centered overflow="outside" size="815px" on:close={closeModal} >
+		<ModalMain bind:this={mainModalComponent} bind:opened />
+		<Modal  {opened} centered overflow="outside" size="815px" on:close={ ()=> mainModalComponent.closeModal() } >
 			<ScreenShot/>
 		</Modal>
-		<Group position="center">
+		<!-- <Group position="center">
 			<Button on:click={() => (opened = true)}>Open Modal</Button>
-		</Group>
+		</Group> -->
 	
 	
 		<!-- <h1>Snip Tool</h1>
