@@ -114,14 +114,14 @@
 						const screenShotModal = document.getElementById("screenShotModal");
 						const img = document.createElement('img');
 						img.src = screenshotUrl;
+						img.style.height='400px';
+						img.style.width='700px';
+						img.style.marginTop='25px';
 						console.log(screenShotModal,screenshotUrl);
 						screenShotModal?.appendChild(img);
-
-						
-						
-						// cropper = new Cropper(img,{
-						// 	zoomable:false
-						// });
+						cropper = new Cropper(img,{
+							zoomable:false
+						});
 						
 						// Clean up the resources
 						URL.revokeObjectURL(screenshotUrl);
