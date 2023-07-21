@@ -1,15 +1,6 @@
 <script lang="ts">
 	import ModalMain from '../components/ModalMain.svelte';
-	import ScreenShot from '../components/ScreenShot.svelte';
 	import { SvelteUIProvider } from '@svelteuidev/core';
-	import { Modal, Group, Button } from '@svelteuidev/core';
-	
-
-	let mainModalComponent:any;
-	let opened:boolean;
-
-	
-
 
 </script>
 
@@ -26,10 +17,8 @@
 <SvelteUIProvider>
 	<div id="main" class="mainContainer">
 		
-		<ModalMain bind:this={mainModalComponent} bind:opened />
-		<Modal  {opened} centered overflow="outside" size="815px" on:close={ ()=> mainModalComponent.closeModal() } >
-			<ScreenShot/>
-		</Modal>
+		<ModalMain />
+	
 		<!-- <Group position="center">
 			<Button on:click={() => (opened = true)}>Open Modal</Button>
 		</Group> -->

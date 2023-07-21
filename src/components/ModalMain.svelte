@@ -1,15 +1,14 @@
 <script lang="ts">
 	import camera from '../assests/camera.png';
 	import videoCamera from '../assests/videoCamera.png';
-	import ScreenShot from './ScreenShot.svelte';
-
+	import { Modal, Group, Button } from '@svelteuidev/core';
 	import { onMount } from 'svelte';
+	import { ActionIcon } from '@svelteuidev/core';
+	export let opened: boolean = false;
 
-	export let opened:boolean = false;
-
-	export const closeModal =()=>{
-		opened=false;
-	}
+	export const closeModal = () => {
+		opened = false;
+	};
 
 	var startX = 0;
 	var startY = 0;
@@ -85,6 +84,20 @@
 		});
 	});
 
+	const screenShot = () => {
+		let imgSrc = cropper?.getCroppedCanvas().toDataURL();
+		cropper.destroy();
+		const imgHolder = document.getElementById('screenshotImg') as HTMLImageElement;
+		imgHolder.src = imgSrc;
+	};
+
+	const cropScreenShot = () =>{
+		const imgHolder = document.getElementById('screenshotImg') as HTMLImageElement;
+		cropper = new Cropper(imgHolder, {
+							zoomable: false
+			});
+
+	}
 	// Capture screenshot of a specific area
 	function captureScreenshot() {
 		const webpageHeight = document.documentElement.clientHeight;
@@ -96,8 +109,7 @@
 				const videoTrack = stream.getVideoTracks()[0];
 				const videoElement = document.createElement('video');
 				videoElement.srcObject = new MediaStream([videoTrack]);
-				
-				
+
 				videoElement.onloadedmetadata = () => {
 					const canvas = document.createElement('canvas');
 					canvas.width = webpageWidth;
@@ -105,24 +117,25 @@
 
 					const context = canvas.getContext('2d');
 					context?.drawImage(videoElement, 0, 0, webpageWidth, webpageHeight);
-					opened=true;
+					opened = true;
 					canvas.toBlob((blob) => {
 						const screenshotUrl = URL.createObjectURL(blob as Blob);
 
 						// Open the screenshot in a new window/tab
-						
-						const screenShotModal = document.getElementById("screenShotModal");
+
+						const screenShotModal = document.getElementById('screenShotModal');
 						const img = document.createElement('img');
+						img.id = 'screenshotImg';
 						img.src = screenshotUrl;
-						img.style.height='400px';
-						img.style.width='700px';
-						img.style.marginTop='25px';
-						console.log(screenShotModal,screenshotUrl);
+						img.style.height = '400px';
+						img.style.width = '700px';
+						img.style.marginTop = '25px';
+						console.log(screenShotModal, screenshotUrl);
 						screenShotModal?.appendChild(img);
-						cropper = new Cropper(img,{
-							zoomable:false
+						cropper = new Cropper(img, {
+							zoomable: false
 						});
-						
+
 						// Clean up the resources
 						URL.revokeObjectURL(screenshotUrl);
 					}, 'image/png');
@@ -250,8 +263,46 @@
 		<section class="bodyLeft" />
 		<section class="bodyRight" />
 	</div>
-</div>
+	<Modal {opened} centered overflow="outside" size="815px" on:close={() => closeModal()}>
+		<div class="modalContainer">
+			<div class="screenShotModal" id="screenShotModal" />
 
+			<div class="buttonContainer">
+				<ActionIcon
+					on:click={() => {
+						screenShot();
+					}}
+				>
+					<svg
+						width="15"
+						height="15"
+						viewBox="0 0 15 15"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+						><path
+							d="M3.5 8.00684e-07C3.77614 7.88614e-07 4 0.223859 4 0.500001L4 3.00006L11.5 3.00006C11.7761 3.00006 12 3.22392 12 3.50006L12 11.0001L14.5 11C14.7761 11 15 11.2238 15 11.5C15 11.7761 14.7762 12 14.5 12L12 12.0001L12 14.5C12 14.7761 11.7761 15 11.5 15C11.2239 15 11 14.7761 11 14.5L11 12.0001L3.5 12.0001C3.22386 12.0001 3 11.7762 3 11.5001L3 4.00005L0.499989 4C0.223847 4 -6.10541e-06 3.77613 -5.02576e-07 3.49999C5.13006e-06 3.22385 0.223867 3 0.50001 3L3 3.00005L3 0.500001C3 0.223859 3.22386 8.12755e-07 3.5 8.00684e-07ZM4 4.00006L4 11.0001L11 11.0001L11 4.00006L4 4.00006Z"
+							fill="currentColor"
+							fill-rule="evenodd"
+							clip-rule="evenodd"
+						/></svg
+					>
+				</ActionIcon>
+				<ActionIcon on:click={() => {
+					cropScreenShot();
+				}}>
+					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 15 15"
+						><path
+							fill="currentColor"
+							fill-rule="evenodd"
+							d="M12.5 2h-10a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5v-10a.5.5 0 0 0-.5-.5Zm-10-1A1.5 1.5 0 0 0 1 2.5v10A1.5 1.5 0 0 0 2.5 14h10a1.5 1.5 0 0 0 1.5-1.5v-10A1.5 1.5 0 0 0 12.5 1h-10Z"
+							clip-rule="evenodd"
+						/></svg
+					>
+				</ActionIcon>
+			</div>
+		</div>
+	</Modal>
+</div>
 
 <style>
 	.modalContainer {
@@ -295,5 +346,26 @@
 		display: flex;
 		border-bottom-left-radius: 10px;
 		border-bottom-right-radius: 10px;
+	}
+
+	.screenShotModal {
+		width: 775px;
+		height: 400px;
+		border-radius: 10px;
+	}
+	.modalContainer {
+		width: 775px;
+		height: 800px;
+		border-radius: 10px;
+		background-color: bisque;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.buttonContainer {
+		width: 775px;
+		height: 200px;
+		background-color: aquamarine;
 	}
 </style>
