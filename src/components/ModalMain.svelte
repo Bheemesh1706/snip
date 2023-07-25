@@ -9,7 +9,7 @@
 	export const closeModal = () => {
 		opened = false;
 	};
-
+	let imgSrc=''
 	var startX = 0;
 	var startY = 0;
 	var mouseX = 0;
@@ -75,7 +75,7 @@
 		save?.addEventListener('click', (e) => {
 			console.log('click');
 			e.preventDefault();
-			let imgSrc = cropper?.getCroppedCanvas().toDataURL();
+			imgSrc = cropper?.getCroppedCanvas().toDataURL();
 			const img = document.createElement('img');
 			img.src = imgSrc;
 			img.style.height = '500px';
@@ -85,17 +85,35 @@
 	});
 
 	const screenShot = () => {
-		let imgSrc = cropper?.getCroppedCanvas().toDataURL();
+		imgSrc = cropper?.getCroppedCanvas().toDataURL();
 		cropper.destroy();
 		const imgHolder = document.getElementById('screenshotImg') as HTMLImageElement;
 		imgHolder.src = imgSrc;
 	};
 
-	const cropScreenShot = () =>{
+	const cropScreenShot = () => {
 		const imgHolder = document.getElementById('screenshotImg') as HTMLImageElement;
 		cropper = new Cropper(imgHolder, {
-							zoomable: false
-			});
+			zoomable: false
+		});
+	};
+
+	const createCanvas = () =>{
+		const canvas = document.createElement('canvas');
+		canvas.width=775;
+		canvas.height=400;
+		const ctx = canvas.getContext('2d');
+		var backGround = new Image();
+		backGround.src=imgSrc;
+		backGround.onload = function(){
+			ctx?.drawImage(backGround,0,0,canvas.width, canvas.height);
+		}
+		cropper.destroy();
+		const imgHolder = document.getElementById('screenshotImg') as HTMLImageElement;
+		imgHolder.remove();
+
+		const screenShotModal = document.getElementById('screenShotModal');
+		screenShotModal?.append(canvas);
 
 	}
 	// Capture screenshot of a specific area
@@ -287,14 +305,28 @@
 						/></svg
 					>
 				</ActionIcon>
-				<ActionIcon on:click={() => {
-					cropScreenShot();
-				}}>
+				<ActionIcon
+					on:click={() => {
+						cropScreenShot();
+					}}
+				>
 					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 15 15"
 						><path
 							fill="currentColor"
 							fill-rule="evenodd"
 							d="M12.5 2h-10a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5v-10a.5.5 0 0 0-.5-.5Zm-10-1A1.5 1.5 0 0 0 1 2.5v10A1.5 1.5 0 0 0 2.5 14h10a1.5 1.5 0 0 0 1.5-1.5v-10A1.5 1.5 0 0 0 12.5 1h-10Z"
+							clip-rule="evenodd"
+						/></svg
+					>
+				</ActionIcon>
+				<ActionIcon on:click={() => {
+					createCanvas();
+				}}>
+					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 15 15"
+						><path
+							fill="currentColor"
+							fill-rule="evenodd"
+							d="M11.854 1.146a.5.5 0 0 0-.707 0L3.714 8.578a1 1 0 0 0-.212.314L2.04 12.303a.5.5 0 0 0 .657.657l3.411-1.463a1 1 0 0 0 .314-.211l7.432-7.432a.5.5 0 0 0 0-.708l-2-2Zm-7.432 8.14l7.078-7.08L12.793 3.5l-7.078 7.078l-1.496.641l-.438-.438l.64-1.496Z"
 							clip-rule="evenodd"
 						/></svg
 					>
@@ -367,5 +399,6 @@
 		width: 775px;
 		height: 200px;
 		background-color: aquamarine;
+		display: flex;
 	}
 </style>
