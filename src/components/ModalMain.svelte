@@ -144,6 +144,14 @@
 		imgHolder.remove();
 
 		const screenShotModal = document.getElementById('screenShotModal');
+
+		//Adding mouse event to canvas
+
+		canvas.addEventListener('mousedown', handleMouseDownSketch);
+		canvas.addEventListener('mousemove', handleMouseMoveSketch);
+		canvas.addEventListener('mouseup',  handleMouseStopSketch);
+		canvas.addEventListener('mouseout', handleMouseStopSketch);
+
 		screenShotModal?.append(canvas);
 	};
 
@@ -193,7 +201,6 @@
 	}
 	function showPopUp() {
 		var result = window.confirm('Do you like to take a screenshot?');
-
 		if (result) {
 			console.log(startX, startY, width, height);
 			var canvas = document.getElementById('snip') as HTMLCanvasElement;
@@ -204,6 +211,36 @@
 			ctx?.clearRect(0, 0, canvas.width, canvas.height);
 		}
 	}
+
+	//Handle Mouse to draw using cursor
+	const handleMouseDownSketch = (event: MouseEvent) => {
+		event.preventDefault();
+		const canvas = document.getElementById('screenshotCanvas') as HTMLCanvasElement;
+		startX = event.clientX - -canvas.offsetLeft;
+		startY = event.clientY - -canvas.offsetTop;
+		mousedown = true;
+	};
+
+	const handleMouseStopSketch = (event: MouseEvent) => {
+		event.preventDefault();
+		mousedown = false;
+	};
+
+	const handleMouseMoveSketch = (event: MouseEvent) => {
+		event.preventDefault();
+		const canvas = document.getElementById('screenshotCanvas') as HTMLCanvasElement;
+		const ctx = canvas.getContext('2d');
+		if (mousedown && ctx) {
+			const x = event.clientX - canvas.offsetLeft;
+			const y = event.clientY - canvas.offsetTop;
+			ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+			ctx.beginPath();
+			ctx.moveTo(startX, startY);
+			ctx.lineTo(x, y);
+			ctx.stroke();
+		}
+	};
+
 	//Handle mouse event
 	const handleMouseDown = (event: MouseEvent) => {
 		event.preventDefault();
