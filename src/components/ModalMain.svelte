@@ -9,7 +9,7 @@
 	export const closeModal = () => {
 		opened = false;
 	};
-	let imgSrc=''
+	let imgSrc = '';
 	var startX = 0;
 	var startY = 0;
 	var mouseX = 0;
@@ -84,38 +84,69 @@
 		});
 	});
 
+	// Function to create image slot
+
+	function createImageSlot(screenshotUrl: string) {
+		const screenShotModal = document.getElementById('screenShotModal');
+		const img = document.createElement('img');
+		img.id = 'screenshotImg';
+		img.src = screenshotUrl;
+		img.style.height = '400px';
+		img.style.width = '700px';
+		img.style.marginTop = '25px';
+		screenShotModal?.appendChild(img);
+		return img;
+	}
+
 	const screenShot = () => {
-		imgSrc = cropper?.getCroppedCanvas().toDataURL();
-		cropper.destroy();
-		const imgHolder = document.getElementById('screenshotImg') as HTMLImageElement;
-		imgHolder.src = imgSrc;
+		const canvas = document.getElementById('screenshotCanvas') as HTMLCanvasElement;
+		if (canvas) {
+			const imgHolder = createImageSlot(canvas.toDataURL());
+			canvas.remove();
+		} else {
+			imgSrc = cropper?.getCroppedCanvas().toDataURL();
+			cropper.destroy();
+			const imgHolder = document.getElementById('screenshotImg') as HTMLImageElement;
+			imgHolder.src = imgSrc;
+		}
 	};
 
 	const cropScreenShot = () => {
-		const imgHolder = document.getElementById('screenshotImg') as HTMLImageElement;
-		cropper = new Cropper(imgHolder, {
-			zoomable: false
-		});
+		const canvas = document.getElementById('screenshotCanvas') as HTMLCanvasElement;
+
+		if (canvas) {
+			const imgHolder = createImageSlot(canvas.toDataURL());
+			canvas.remove();
+			cropper = new Cropper(imgHolder, {
+				zoomable: false
+			});
+		} else {
+			const imgHolder = document.getElementById('screenshotImg') as HTMLImageElement;
+			cropper = new Cropper(imgHolder, {
+				zoomable: false
+			});
+		}
 	};
 
-	const createCanvas = () =>{
+	const createCanvas = () => {
 		const canvas = document.createElement('canvas');
-		canvas.width=775;
-		canvas.height=400;
+		canvas.width = 775;
+		canvas.height = 400;
 		const ctx = canvas.getContext('2d');
 		var backGround = new Image();
-		backGround.src=imgSrc;
-		backGround.onload = function(){
-			ctx?.drawImage(backGround,0,0,canvas.width, canvas.height);
-		}
+		backGround.src = imgSrc;
+		backGround.onload = function () {
+			ctx?.drawImage(backGround, 0, 0, canvas.width, canvas.height);
+		};
+		canvas.id = 'screenshotCanvas';
 		cropper.destroy();
 		const imgHolder = document.getElementById('screenshotImg') as HTMLImageElement;
 		imgHolder.remove();
 
 		const screenShotModal = document.getElementById('screenShotModal');
 		screenShotModal?.append(canvas);
+	};
 
-	}
 	// Capture screenshot of a specific area
 	function captureScreenshot() {
 		const webpageHeight = document.documentElement.clientHeight;
@@ -140,16 +171,8 @@
 						const screenshotUrl = URL.createObjectURL(blob as Blob);
 
 						// Open the screenshot in a new window/tab
-
-						const screenShotModal = document.getElementById('screenShotModal');
-						const img = document.createElement('img');
-						img.id = 'screenshotImg';
-						img.src = screenshotUrl;
-						img.style.height = '400px';
-						img.style.width = '700px';
-						img.style.marginTop = '25px';
-						console.log(screenShotModal, screenshotUrl);
-						screenShotModal?.appendChild(img);
+						const img = createImageSlot(screenshotUrl);
+						console.log(img);
 						cropper = new Cropper(img, {
 							zoomable: false
 						});
@@ -319,9 +342,12 @@
 						/></svg
 					>
 				</ActionIcon>
-				<ActionIcon on:click={() => {
-					createCanvas();
-				}}>
+
+				<ActionIcon
+					on:click={() => {
+						createCanvas();
+					}}
+				>
 					<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 15 15"
 						><path
 							fill="currentColor"
